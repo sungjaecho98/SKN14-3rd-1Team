@@ -1,12 +1,6 @@
 import requests, json, math
 from pprint import pprint
 
-end_point = 'https://apis.data.go.kr/1471000/HtfsInfoService03'
-ENCODING = 'COVqDxtrNsa1PEgImSCkU%2B9ncLCoNr4m%2Bh6kiSZX%2B8dTB5pAB9VgCV1y0B8OqZvYpiMjOBMHGId7NJlJPAALwA%3D%3D'
-decoding = 'COVqDxtrNsa1PEgImSCkU+9ncLCoNr4m+h6kiSZX+8dTB5pAB9VgCV1y0B8OqZvYpiMjOBMHGId7NJlJPAALwA=='
-
-url = 'http://apis.data.go.kr/1471000/HtfsInfoService03/getHtfsItem01?'
-
 num_of_rows = 10
 
 params = {

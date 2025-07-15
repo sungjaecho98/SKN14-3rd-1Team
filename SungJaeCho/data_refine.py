@@ -7,9 +7,9 @@ Original file is located at
     https://colab.research.google.com/drive/1qO5cmLv-4W7TBNXBW1BOdGKwpSktEsLa
 """
 
-!pip install langchain langchain-openai langchain-pinecone langchain-community
+# !pip install langchain langchain-openai langchain-pinecone langchain-community
 
-from google.colab import userdata
+# from google.colab import userdata
 import os
 
 os.environ['LANGSMITH_TRACING'] = userdata.get('LANGSMITH_TRACING')
@@ -186,7 +186,7 @@ response = qa_chain(query)
 
 print("🧠 GPT 응답:")
 print(response['result'])
-# print("\n📎 참고 문서:")
-# for doc in response['source_documents']:
-#     print(doc.page_content)
-#     print("-" * 60)
+print("\n📎 참고 문서:")
+for doc in response['source_documents']:
+    print(doc.page_content)
+    print("-" * 60)

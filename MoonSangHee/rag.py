@@ -50,14 +50,14 @@ def vector_store(docs, embeddings, index_name, mode='read'):
     return vector_store
 
 
-def retriever(docs_file_path, search_type='similarity', k=3, vector_store_mode='read'):
+def retriever(docs_file_path, search_type='mmr', k=3, lambda_mult=0.7, vector_store_mode='read'):
 
     docs = new_docs(docs_file_path)
 
     embeddings = OpenAIEmbeddings(openai_api_key=cfg["OPENAI_API_KEY"], model=cfg["OPENAI_EMBEDDING_MODEL"] )
     vector_stores = vector_store(docs, embeddings, index_name=cfg['VECTOR_STORE_INDEX_NAME'], mode=vector_store_mode)
 
-    retriever = vector_stores.as_retriever(search_type=search_type, search_kwargs={'k': k})
+    retriever = vector_stores.as_retriever(search_type=search_type, search_kwargs={'k': k, 'lambda_mult': lambda_mult})
 
-    return retriever
+    return retriever, vector_stores
 

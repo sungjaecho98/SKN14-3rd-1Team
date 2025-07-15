@@ -1,8 +1,9 @@
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain.output_parsers import RegexParser
-from rag import new_docs, vector_store, retriever
+from rag import retriever
 from config import load_config
+from langchain.chains import RetrievalQA
 
 
 def build_rag_chain(system_prompt, llm_model = "gpt-4o-mini", temperature = 0.3):
@@ -16,17 +17,30 @@ def build_rag_chain(system_prompt, llm_model = "gpt-4o-mini", temperature = 0.3)
 
     return chain
 
+def use_retriever(vector_store, question, k=3, threshold=0.3):
+    
+    docs_with_scores = vector_store.similarity_search_with_score(question, k=3)
 
-def run_query(query, retriever, chain):
+    relevant_docs = [doc for doc, score in docs_with_scores if score >= threshold]
 
-    docs = retriever.invoke(query)
-    context = "\n\n".join(doc.page_content for doc in docs)
-    output = chain.invoke({
-        "context": context,
-        "question": query})
+    if relevant_docs:
+        return True
+    
+    else:
+        return False
 
-    return output["answer"]
-
+def run(question, retriever, use_retriever=True): 
+    
+    llm = ChatOpenAI(openai_api_key=cfg["OPENAI_API_KEY"], temperature=0, model_name='gpt-4o-mini')
+    
+    if use_retriever:
+        print('vectordb 기반 검색 ')
+        return RetrievalQA.from_chain_type(llm=llm, retriever=retriever).run(question)
+    
+    else:
+        print('llm 기반 검색')
+        return llm.invoke(question).content
+    
 def prompt():
     system_prompt = PromptTemplate.from_template("""
     [System Instruction]
@@ -62,11 +76,12 @@ def prompt():
 cfg = load_config()
 file_path = './output_cleaned.jsonl'
 
-retriever = retriever(file_path)
+retriever, vector_store = retriever(file_path)
 system_prompt = prompt()
 chain = build_rag_chain(system_prompt=system_prompt)
-query = '쓰리플렉스 콜레스테롤은 임산부가 섭취해도 돼?'
-res = run_query(query, retriever, chain)
+question = '면역력에 도움이 되는 영양제 추천해줘'
+u_r = use_retriever(vector_store, question)
+res = run(question, retriever, u_r)
 
 print(res)
 

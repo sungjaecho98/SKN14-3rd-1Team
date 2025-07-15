@@ -7,11 +7,15 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import warnings
 warnings.filterwarnings('ignore')
+import streamlit.components.v1 as components
 # Python이 이미 한 번 임포트한 모듈을 캐시해두기 때문에 리로드 필요
 import importlib
 import rag_chatbot as rag_chatbot
 importlib.reload(rag_chatbot)
 from rag_chatbot import ask_nutrition_question
+import recommand  as recommand
+importlib.reload(recommand)
+from recommand import get_recommendation_from_web
 
 # 페이지 설정
 st.set_page_config(
@@ -94,85 +98,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# 샘플 데이터 생성 (실제로는 데이터베이스나 API에서 가져옴)
-@st.cache_data
-def load_sample_data():
-    products = [
-        {
-            "name": "멀티비타민 프리미엄",
-            "brand": "NutriLife",
-            "price": 32000,
-            "ingredients": ["비타민 A", "비타민 C", "비타민 D", "비타민 E", "비타민 B군", "아연", "셀레늄"],
-            "benefits": ["면역력 강화", "에너지 대사", "항산화"],
-            "dosage": "1일 1회 1정",
-            "warnings": ["식후 30분 이내 복용", "다른 종합비타민과 중복 섭취 금지"],
-            "category": "멀티비타민",
-            "rating": 4.5,
-            "reviews": 1247
-        },
-        {
-            "name": "오메가3 EPA/DHA",
-            "brand": "OceanHealth",
-            "price": 28000,
-            "ingredients": ["EPA", "DHA", "비타민 E"],
-            "benefits": ["심혈관 건강", "뇌 기능 개선", "항염 효과"],
-            "dosage": "1일 2회 식후 복용",
-            "warnings": ["혈액 응고 억제제 복용 시 의사와 상담"],
-            "category": "오메가3",
-            "rating": 4.7,
-            "reviews": 856
-        },
-        {
-            "name": "마그네슘 + 비타민B",
-            "brand": "StressRelief",
-            "price": 24000,
-            "ingredients": ["마그네슘", "비타민 B1", "비타민 B6", "비타민 B12"],
-            "benefits": ["피로 회복", "신경 안정", "스트레스 완화"],
-            "dosage": "1일 1회 저녁 식후",
-            "warnings": ["신장 질환자는 의사와 상담 후 복용"],
-            "category": "미네랄",
-            "rating": 4.3,
-            "reviews": 643
-        },
-        {
-            "name": "비타민D + 칼슘",
-            "brand": "BoneStrong",
-            "price": 26000,
-            "ingredients": ["비타민 D3", "칼슘", "마그네슘", "아연"],
-            "benefits": ["뼈 건강", "칼슘 흡수 촉진", "근육 기능"],
-            "dosage": "1일 2회 식후 복용",
-            "warnings": ["신장결석 병력이 있는 경우 주의"],
-            "category": "칼슘",
-            "rating": 4.6,
-            "reviews": 923
-        },
-        {
-            "name": "프로바이오틱스 50억",
-            "brand": "GutHealth",
-            "price": 35000,
-            "ingredients": ["락토바실러스", "비피도박테리움", "프리바이오틱스"],
-            "benefits": ["장 건강", "소화 개선", "면역력 강화"],
-            "dosage": "1일 1회 공복 또는 식후",
-            "warnings": ["냉장 보관 필수", "항생제와 2시간 간격 복용"],
-            "category": "프로바이오틱스",
-            "rating": 4.4,
-            "reviews": 734
-        },
-        {
-            "name": "콜라겐 + 히알루론산",
-            "brand": "BeautyInside",
-            "price": 45000,
-            "ingredients": ["콜라겐 펩타이드", "히알루론산", "비타민 C", "아연"],
-            "benefits": ["피부 탄력", "관절 건강", "항산화"],
-            "dosage": "1일 1회 공복 시 복용",
-            "warnings": ["알레르기 반응 주의", "임신 중 복용 금지"],
-            "category": "콜라겐",
-            "rating": 4.2,
-            "reviews": 1456
-        }
-    ]
-    return pd.DataFrame(products)
-
 # # 영양 성분 분석 데이터
 # @st.cache_data
 # def get_nutrition_analysis():
@@ -215,9 +140,9 @@ if st.sidebar.checkbox("소화/장 건강"):
 if st.sidebar.checkbox("스트레스 관리"):
     health_goals.append("stress")
 
-# 추가 정보
-allergies = st.sidebar.text_area("알레르기/복용 중인 약물",
-                                 placeholder="예: 갑각류 알레르기, 혈압약 복용 중")
+# # 추가 정보
+# allergies = st.sidebar.text_area("알레르기/복용 중인 약물",
+#                                  placeholder="예: 갑각류 알레르기, 혈압약 복용 중")
 
 # 세션 상태 초기화
 if 'chat_history' not in st.session_state:
@@ -231,7 +156,7 @@ tab1, tab2 = st.tabs(["💬 질의응답", "🎯 맞춤 추천"])
 
 # 탭 1: 질의응답
 with tab1:
-    st.header("💬 영양제 Q&A")
+    st.header("💬 식품의약품안전처 건강기능식품정보 기반 Q&A")
 
     # 샘플 질문 버튼
     st.subheader("자주 묻는 질문")
@@ -287,60 +212,66 @@ with tab1:
             </div>
             """, unsafe_allow_html=True)
 
-# TODO 탭 2: 맞춤 추천
+# 탭 2: 맞춤 추천
 with tab2:
-    st.header("🎯 개인 맞춤형 추천")
+    st.header("🎯 개인 맞춤형 AI 추천")
 
     if st.button("🔍 맞춤 추천 생성하기", type="primary"):
         if age and gender:
             with st.spinner("AI가 맞춤 추천을 생성하고 있습니다..."):
-                # 실제로는 LLM + RAG 시스템 호출
-                products_df = load_sample_data()
 
-                # 간단한 추천 로직 (실제로는 더 복잡한 ML 모델 사용)
+                # 사용자 조건에 따라 검색 쿼리 설정
                 if "energy" in health_goals:
-                    recommended_products = products_df[products_df['category'].isin(['멀티비타민', '미네랄'])]
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 피로 회복, 면역력 관련 건강기능식품 추천"
                 elif "skin" in health_goals:
-                    recommended_products = products_df[products_df['category'].isin(['콜라겐', '멀티비타민'])]
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 피부 탄력 관련 영양제 추천"
                 elif "digest" in health_goals:
-                    recommended_products = products_df[products_df['category'].isin(['프로바이오틱스'])]
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 장 건강 관련 프로바이오틱스 추천"
                 else:
-                    recommended_products = products_df.head(3)
+                    query = f"{age}세 {gender}{pregnancy_text}에게 일반적으로 추천되는 건강기능식품"
 
-                st.session_state.recommendations = recommended_products.to_dict('records')
+                # 웹 기반 추천 호출
+                web_result = get_recommendation_from_web(query)
+                try:
+                    web_products = json.loads(web_result)
+                    st.session_state.recommendations = web_products
+                except Exception as e:
+                    print("Error parsing web result:", e)
+                    st.error("추천 정보를 파싱하는 데 실패했습니다. 응답 내용:\n" + web_result)
+                    st.stop()
         else:
             st.error("사이드바에서 개인정보를 모두 입력해주세요.")
 
-    # 추천 결과 표시
+    # 결과 렌더링
     if st.session_state.recommendations:
-        st.success(f"당신의 프로필({age}세 {gender}{pregnancy_text})에 맞춘 추천 제품입니다!")
+        st.success(f"당신의 프로필({age}세 {gender}{pregnancy_text})에 맞춘 AI 추천 제품입니다!")
 
         for product in st.session_state.recommendations:
-            st.markdown(f"""
+            components.html(f"""
             <div class="product-card">
                 <h3>🌟 {product['name']}</h3>
-                <p><strong>브랜드:</strong> {product['brand']} | <strong>가격:</strong> ₩{product['price']:,}</p>
+                <p><strong>브랜드:</strong> {product['brand']} | <strong>가격:</strong> {product['price']}</p>
                 <p><strong>평점:</strong> ⭐ {product['rating']}/5.0 ({product['reviews']}개 리뷰)</p>
-                
+
                 <h4>주요 성분:</h4>
                 <div>
-                    {''.join([f'<span class="ingredient-tag">{ingredient}</span>' for ingredient in product['ingredients']])}
+                    {''.join([f'<span class="ingredient-tag">{i}</span>' for i in product['ingredients']])}
                 </div>
-                
+
                 <h4>기대 효과:</h4>
                 <p>{' • '.join(product['benefits'])}</p>
-                
+
                 <h4>복용법:</h4>
                 <p>{product['dosage']}</p>
-                
+
                 <div class="warning-box">
                     <h4>⚠️ 주의사항:</h4>
                     <ul>
-                        {''.join([f'<li>{warning}</li>' for warning in product['warnings']])}
+                        {''.join([f'<li>{w}</li>' for w in product['warnings']])}
                     </ul>
                 </div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
 
 # - 2차 추후 개발
 # # TODO 탭 3: 성분 분석

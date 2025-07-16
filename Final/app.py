@@ -195,18 +195,20 @@ with tab2:
             with st.spinner("AI가 맞춤 추천을 생성하고 있습니다..."):
 
                 # 사용자 조건에 따라 검색 쿼리 설정
-                if "energy" in health_goals:
-                    query = f"{age}세 {gender}{pregnancy_text}를 위한 피로 회복, 면역력 관련 건강기능식품 추천"
-                elif "skin" in health_goals:
-                    query = f"{age}세 {gender}{pregnancy_text}를 위한 피부 탄력 관련 영양제 추천"
-                elif "digest" in health_goals:
-                    query = f"{age}세 {gender}{pregnancy_text}를 위한 장 건강 관련 프로바이오틱스 추천"
-                elif "immunity" in health_goals:
-                    query = f"{age}세 {gender}{pregnancy_text}를 위한 면역력 강화 영양제 추천"
-                elif "joint" in health_goals:
-                    query = f"{age}세 {gender}{pregnancy_text}를 위한 관절 건강 영양제 추천"
-                elif "stress" in health_goals:
-                    query = f"{age}세 {gender}{pregnancy_text}를 위한 스트레스 관리 관련 영양제 추천"
+                goal_mapping = {
+                    "immunity": "면역력 강화",
+                    "skin": "피부 건강",
+                    "energy": "피로 회복",
+                    "joint": "관절 건강",
+                    "digest": "소화/장 건강",
+                    "stress": "스트레스 관리"
+                }
+
+                selected_goals_ko = [goal_mapping[goal] for goal in health_goals]
+
+                if selected_goals_ko:
+                    goals_text = " / ".join(selected_goals_ko)
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 {goals_text} 관련 건강기능식품 추천"
                 else:
                     query = f"{age}세 {gender}{pregnancy_text}에게 일반적으로 추천되는 건강기능식품"
 
@@ -227,6 +229,9 @@ with tab2:
         st.success(f"당신의 프로필({age}세 {gender}{pregnancy_text})에 맞춘 AI 추천 제품입니다!")
 
         for product in st.session_state.recommendations:
+            image_src = product.get('image_url', '')
+            image_html = f'<img src="{image_src}" alt="{product["name"]} 이미지">' if image_src else ''
+
             components.html(f"""
             <style>
                 .product-card {{
@@ -237,10 +242,31 @@ with tab2:
                     margin: 1rem 0;
                     border-left: 5px solid #667eea;
                 }}
-            </style>
+                
+                .product-image {{
+                    width: 300px;  
+                    height: 300px; 
+                    overflow: hidden; 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center; 
+                    margin: 0 auto 15px auto; 
+                    border-radius: 5px;
+                    flex-shrink: 0;
+                }}  
 
+                .product-image img {{
+                    max-width: 100%;  
+                    max-height: 100%; 
+                    object-fit: contain; 
+                    display: block; 
+                }}
+            </style>
+            
+            
             <div class="product-card">
                 <h3>🌟 {product['name']}</h3>
+                <div class="product-image">{image_html}</div>
                 <p><strong>브랜드:</strong> {product['brand']} | <strong>가격:</strong> {product['price']}</p>
                 <p><strong>평점:</strong> ⭐ {product['rating']}/5.0 ({product['reviews']}개 리뷰)</p>
 
@@ -261,7 +287,7 @@ with tab2:
                     </ul>
                 </div>
             </div>
-            """, height=400)
+            """, height=800, scrolling=True)
 
 # 탭 3: 사진 검색
 with tab3:

@@ -92,15 +92,9 @@ st.markdown("""
         background: #f0f9ff;
     }
     
-    .product-image {
+    .image-product {
         width: 50px;  
         height: 50px; 
-        object-fit: contain; 
-        display: block; 
-        margin: 0 auto 15px auto; 
-        border-radius: 5px; 
-        border: 1px solid #eee; 
-        flex-shrink: 0; 
     }
 
 </style>
@@ -265,14 +259,13 @@ with tab2:
         for product in st.session_state.recommendations:
             # --- 이미지 추가
             image_src = product.get('image_url', '')
-            image_html = f'<img src="{image_src}" class="product-image" alt="{product["name"]} 이미지">' if image_src else ''
+            image_html = f'<img src="{image_src}" alt="{product["name"]} 이미지">' if image_src else ''
             # ---
 
-            components.html(f"""
-            <div class="product-image">{image_html}</div>
+            components.html(f"""            
             <div class="product-card">
                 <h3>🌟 {product['name']}</h3>
-                
+                <div class="image-product">{image_html}</div>
                 <p><strong>브랜드:</strong> {product['brand']} | <strong>가격:</strong> {product['price']}</p>
                 <p><strong>평점:</strong> ⭐ {product['rating']}/5.0 ({product['reviews']}개 리뷰)</p>
 

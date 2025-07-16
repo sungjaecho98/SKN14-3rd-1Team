@@ -37,7 +37,7 @@ def ask_nutrition_question(question: str) -> str:
     )
 
     docs_with_scores = vector_store.similarity_search_with_score(question, k=3)
-    threshold = 0.8
+    threshold = 0.3
     relevant_docs = [doc for doc, score in docs_with_scores if score >= threshold]
 
     # TODO 계속 llm 기반 검색만 함...

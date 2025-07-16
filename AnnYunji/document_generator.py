@@ -10,7 +10,6 @@ from api import fetch_openapi_data
 def normalize_numbering(text: str) -> str:
     if not text:
         return ""
-
     text = re.sub(r'[\u2460-\u2473]', lambda m: f"{ord(m.group()) - 9311})", text)   # ① ~ ⑳
     text = re.sub(r'[\u2776-\u277F]', lambda m: f"{ord(m.group()) - 10101})", text)  # ❶ ~ ❿
     text = re.sub(r'[\u2488-\u249B]', lambda m: f"{ord(m.group()) - 9343})", text)   # ⑴ ~ ⒛

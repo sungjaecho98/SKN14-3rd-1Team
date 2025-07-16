@@ -33,12 +33,21 @@ st.set_page_config(
 st.markdown("""
 <style>
     .main-header {
-        background: linear-gradient(135deg, #a8edea 0%, #d3f8e2 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 2rem;
         border-radius: 10px;
         text-align: center;
-        color: #1a202c;
+        color: white;
         margin-bottom: 2rem;
+    }
+    
+    .product-card {
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border-left: 5px solid #667eea;
     }
     
     .ingredient-tag {
@@ -186,35 +195,26 @@ with tab1:
 
     if st.button("전송") and user_input:
         st.session_state.chat_history.append({"type": "user", "message": user_input})
-        st.success(f"당신의 프로필 : {age}세 {gender}{pregnancy_text}에 맞춘 식품의약품안전처 건강기능식품정보 입니다!")
-        
+        st.success(f"당신의 프로필({age}세 {gender}{pregnancy_text})에 맞춘 식품의약품안전처 건강기능식품정보 입니다!")
         with st.spinner("AI가 답변 중입니다..."):
-            user_input = str(age) + '세 ' + gender + ('(임신중)' if is_pregnant else '') + ' ' + user_input
             response = rag_chatbot.run(user_input)
             st.session_state.chat_history.append({"type": "bot", "message": response})
 
-    # 질문-답변 묶기
-    chat_pairs = []
-    history = st.session_state.chat_history
-    i = 0
 
-    while i < len(history) - 1:
-        if history[i]["type"] == "user" and history[i+1]["type"] == "bot":
-            chat_pairs.append((history[i], history[i+1]))
-            i += 2
+    # 채팅 히스토리 출력
+    for chat in st.session_state.chat_history:
+        if chat["type"] == "user":
+            st.markdown(f"""
+            <div class="chat-message user-message">
+                <strong>질문:</strong> {chat["message"]}
+            </div>
+            """, unsafe_allow_html=True)
         else:
-            i += 1  # 짝이 안 맞는 경우 넘어감
-
-    # 최근 것이 위로 오도록 역순 출력
-    for user_msg, bot_msg in reversed(chat_pairs):
-        st.markdown(f"""
-        <div class="chat-message user-message">
-            <strong>질문:</strong> {user_msg["message"]}
-        </div>
-        <div class="chat-message bot-message">
-            <strong>🤖 NutriWise AI 답변:</strong> {bot_msg["message"]}
-        </div>
-        """, unsafe_allow_html=True)
+            st.markdown(f"""
+            <div class="chat-message bot-message">
+                <strong>🤖 NutriWise AI 답변:</strong> {chat["message"]}
+            </div>
+            """, unsafe_allow_html=True)
 
 # 탭 2: 맞춤 추천
 with tab2:
@@ -225,25 +225,17 @@ with tab2:
             with st.spinner("AI가 맞춤 추천을 생성하고 있습니다..."):
 
                 # 사용자 조건에 따라 검색 쿼리 설정
-                goal_mapping = {
-                    "immunity": "면역력 강화",
-                    "skin": "피부 건강",
-                    "energy": "피로 회복",
-                    "joint": "관절 건강",
-                    "digest": "소화/장 건강",
-                    "stress": "스트레스 관리"
-                }
-
-                selected_goals_ko = [goal_mapping[goal] for goal in health_goals]
-
-                if selected_goals_ko:
-                    goals_text = " / ".join(selected_goals_ko)
-                    query = f"{age}세 {gender}{pregnancy_text}를 위한 {goals_text} 관련 건강기능식품 추천"
+                if "energy" in health_goals:
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 피로 회복, 면역력 관련 건강기능식품 추천"
+                elif "skin" in health_goals:
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 피부 탄력 관련 영양제 추천"
+                elif "digest" in health_goals:
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 장 건강 관련 프로바이오틱스 추천"
                 else:
                     query = f"{age}세 {gender}{pregnancy_text}에게 일반적으로 추천되는 건강기능식품"
 
                 # 웹 기반 추천 호출
-                web_result = get_recommendation_from_web(query, cfg)
+                web_result = get_recommendation_from_web(query)
                 try:
                     web_products = json.loads(web_result)
                     st.session_state.recommendations = web_products
@@ -259,56 +251,22 @@ with tab2:
         st.success(f"당신의 프로필({age}세 {gender}{pregnancy_text})에 맞춘 AI 추천 제품입니다!")
 
         for product in st.session_state.recommendations:
-            image_src = product.get('image_url', '')
-            image_html = f'<img src="{image_src}" alt="{product["name"]} 이미지">' if image_src else ''
-
             components.html(f"""
-            <style>
-                .product-card {{
-                    background: #f8fafc;
-                    border: 2px solid #e2e8f0;
-                    border-radius: 10px;
-                    padding: 1.5rem;
-                    margin: 1rem 0;
-                    border-left: 5px solid #667eea;
-                }}
-                
-                .product-image {{
-                    width: 300px;  
-                    height: 300px; 
-                    overflow: hidden; 
-                    display: flex; 
-                    justify-content: center; 
-                    align-items: center; 
-                    margin: 0 auto 15px auto; 
-                    border-radius: 5px;
-                    flex-shrink: 0;
-                }}  
-
-                .product-image img {{
-                    max-width: 100%;  
-                    max-height: 100%; 
-                    object-fit: contain; 
-                    display: block; 
-                }}
-            </style>
-            
-            
             <div class="product-card">
                 <h3>🌟 {product['name']}</h3>
-                <div class="product-image">{image_html}</div>
                 <p><strong>브랜드:</strong> {product['brand']} | <strong>가격:</strong> {product['price']}</p>
                 <p><strong>평점:</strong> ⭐ {product['rating']}/5.0 ({product['reviews']}개 리뷰)</p>
 
-                <p><strong>주요 성분:</strong>
-                    {' '.join([f'<span class="ingredient-tag">{i}</span>' for i in product['ingredients']])}
-                </p>
+                <h4>주요 성분:</h4>
+                <div>
+                    {''.join([f'<span class="ingredient-tag">{i}</span>' for i in product['ingredients']])}
+                </div>
 
-                <p><strong>기대 효과:</strong>
-                    {' • '.join(product['benefits'])}</p>
+                <h4>기대 효과:</h4>
+                <p>{' • '.join(product['benefits'])}</p>
 
-                <p><strong>복용법:</strong>
-                    {product['dosage']}</p>
+                <h4>복용법:</h4>
+                <p>{product['dosage']}</p>
 
                 <div class="warning-box">
                     <h4>⚠️ 주의사항:</h4>
@@ -317,7 +275,7 @@ with tab2:
                     </ul>
                 </div>
             </div>
-            """, height=800, scrolling=True)
+            """)
 
 # - 2차 추후 개발
 # # TODO 탭 3: 성분 분석
@@ -495,3 +453,4 @@ st.markdown("""
 #    - 영양소 상호작용 분석
 #    - 개인 건강 데이터 연동
 #    - 의료진 상담 예약 시스템
+

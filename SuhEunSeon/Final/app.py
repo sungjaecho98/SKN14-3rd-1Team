@@ -1,17 +1,14 @@
 import streamlit as st
 import json
 import warnings
-
 warnings.filterwarnings('ignore')
 import streamlit.components.v1 as components
 import importlib
 from rag_chatbot import RAG_Chatbot
-import recommand as recommand
-
+import recommand  as recommand
 importlib.reload(recommand)
 from recommand import get_recommendation_from_web
 from config import load_config
-
 cfg = load_config()
 rag_chatbot = RAG_Chatbot(cfg)
 
@@ -34,7 +31,7 @@ st.markdown("""
         color: white;
         margin-bottom: 2rem;
     } 
-
+    
     .ingredient-tag { 
         background: #e6fffa;
         color: #234e52;
@@ -44,7 +41,7 @@ st.markdown("""
         margin: 0.2rem;
         display: inline-block;
     }
-
+    
     .warning-box { 
         background: #fef5e7;
         border: 2px solid #f6ad55;
@@ -52,19 +49,19 @@ st.markdown("""
         padding: 1rem;
         margin: 1rem 0;
     }
-
+    
     .chat-message { 
         padding: 1rem;
         margin: 0.5rem 0;
         border-radius: 10px;
         border-left: 4px solid #667eea;
     }
-
+    
     .user-message { 
         background: #e6f3ff;
         text-align: right;
     }
-
+    
     .bot-message { 
         background: #f0f9ff;
     }
@@ -78,6 +75,17 @@ st.markdown("""
     <p style="font-size: 1.2rem; margin-top: 0.5rem;">RAG 기반 개인 맞춤형 영양제 추천 시스템</p>
 </div>
 """, unsafe_allow_html=True)
+
+# # 영양 성분 분석 데이터
+# @st.cache_data
+# def get_nutrition_analysis():
+#     return {
+#         "비타민": {"current": 75, "target": 100, "status": "양호"},
+#         "미네랄": {"current": 60, "target": 100, "status": "부족"},
+#         "항산화": {"current": 85, "target": 100, "status": "양호"},
+#         "오메가3": {"current": 45, "target": 100, "status": "부족"},
+#         "프로바이오틱스": {"current": 30, "target": 100, "status": "부족"}
+#     }
 
 # 사이드바 - 개인정보 입력
 st.sidebar.header("👤 개인정보 입력")
@@ -109,6 +117,10 @@ if st.sidebar.checkbox("소화/장 건강"):
     health_goals.append("digest")
 if st.sidebar.checkbox("스트레스 관리"):
     health_goals.append("stress")
+
+# # 추가 정보
+# allergies = st.sidebar.text_area("알레르기/복용 중인 약물",
+#                                  placeholder="예: 갑각류 알레르기, 혈압약 복용 중")
 
 # 세션 상태 초기화
 if 'chat_history' not in st.session_state:
@@ -157,7 +169,7 @@ with tab1:
     if st.button("전송") and user_input:
         st.session_state.chat_history.append({"type": "user", "message": user_input})
         st.success(f"당신의 프로필 : {age}세 {gender}{pregnancy_text}에 맞춘 식품의약품안전처 건강기능식품정보 입니다!")
-
+        
         with st.spinner("AI가 답변 중입니다..."):
             user_input = str(age) + '세 ' + gender + ('(임신중)' if is_pregnant else '') + ' ' + user_input
             response = rag_chatbot.run(user_input)
@@ -169,8 +181,8 @@ with tab1:
     i = 0
 
     while i < len(history) - 1:
-        if history[i]["type"] == "user" and history[i + 1]["type"] == "bot":
-            chat_pairs.append((history[i], history[i + 1]))
+        if history[i]["type"] == "user" and history[i+1]["type"] == "bot":
+            chat_pairs.append((history[i], history[i+1]))
             i += 2
         else:
             i += 1  # 짝이 안 맞는 경우 넘어감
@@ -238,7 +250,7 @@ with tab2:
                     border-left: 5px solid #667eea;
                 }}
             </style>
-
+                            
             <div class="product-card">
                 <h3>🌟 {product['name']}</h3>
                 <p><strong>브랜드:</strong> {product['brand']} | <strong>가격:</strong> {product['price']}</p>
@@ -263,7 +275,8 @@ with tab2:
             </div>
             """, height=400)
 
-# 탭 3: 사진 검색
+# # - 전체 구성 요약: 이미지 업로드 -> ocr로 제품명 추출(일단보류) -> llm이 추출된 텍스트(제품명)를 질의로 던짐 -> 제품 정보 결과 출력
+
 with tab3:
     st.header("📷 사진 속 영양제 정보 확인")
 
@@ -291,6 +304,7 @@ with tab3:
                 # 복사용 블록
 
                 st.code(llm_result, language="markdown")
+
 
 # 하단 정보
 st.markdown("---")

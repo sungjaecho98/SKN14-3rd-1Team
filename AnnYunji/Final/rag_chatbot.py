@@ -14,7 +14,7 @@ class RAG_Chatbot():
 
         super().__init__()
 
-        self.openai_api_key = os.getenv('OPENAI_API_KEY_2')
+        self.openai_api_key = os.getenv('OPENAI_API_KEY')
         self.pinecone_api_key = os.getenv('PINECONE_API_KEY')
 
         self.cfg = cfg
@@ -34,8 +34,8 @@ class RAG_Chatbot():
     def run(self, question, temperature=0.3, max_token=1024): 
 
         
-        llm = ChatOpenAI(openai_api_key=self.openai_api_key, temperature=temperature, model_name=self.model_name, max_tokens=max_token)
-        retrieved_docs = retriever.get_relevant_documents(question)
+        llm = ChatOpenAI(openai_api_key=self.openai_api_key, temperature=temperature, model_name=self.openai_model_name, max_tokens=max_token)
+        retrieved_docs = self.retriever.get_relevant_documents(question)
         context = "\n---\n".join([doc.page_content for doc in retrieved_docs])
         prompt_template = self.prompt(question=question, context=context)
 
@@ -67,15 +67,7 @@ class RAG_Chatbot():
         [Input Data]
         {question}
 
-        [Example - Output Indicator]
-        Q: 11종 혼합유산균의 유통기한은?
-        A: 제조일로부터 24개월입니다.
 
-        Q: 11종 혼합유산균의 섭취시 주의사항은?
-        A: 1. 질환이 있거나 의약품 복용 시 전문가와 상담하십시오.
-        2. 알레르기 체질 등은 개인에 따라 과민반응을 나타낼 수 있습니다.
-        3. 어린이가 함부로 섭취하지 않도록 일일섭취량 방법을 지도해 주십시오.
-        4. 이상사례 발생 시 섭취를 중단하고 전문가와 상담하십시오.
 
         """)
         return system_prompt
@@ -86,4 +78,4 @@ class RAG_Chatbot():
 # retriever = rag.retriever
 # res = rag.run(question, retriever, cfg['OPENAI_MODEL_NAME'])
 # print(res['answer'])
-# pprint(retriever.invoke('피로개선에 도움이 되는 영양제는?'))
+# # pprint(retriever.invoke('피로개선에 도움이 되는 영양제는?'))

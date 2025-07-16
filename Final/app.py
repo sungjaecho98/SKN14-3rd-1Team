@@ -41,15 +41,6 @@ st.markdown("""
         margin-bottom: 2rem;
     }
     
-    .product-card {
-        background: #f8fafc;
-        border: 2px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        border-left: 5px solid #667eea;
-    }
-    
     .ingredient-tag {
         background: #e6fffa;
         color: #234e52;
@@ -195,26 +186,35 @@ with tab1:
 
     if st.button("전송") and user_input:
         st.session_state.chat_history.append({"type": "user", "message": user_input})
-        st.success(f"당신의 프로필({age}세 {gender}{pregnancy_text})에 맞춘 식품의약품안전처 건강기능식품정보 입니다!")
+        st.success(f"당신의 프로필 : {age}세 {gender}{pregnancy_text}에 맞춘 식품의약품안전처 건강기능식품정보 입니다!")
+        
         with st.spinner("AI가 답변 중입니다..."):
+            user_input = str(age) + '세 ' + gender + ('(임신중)' if is_pregnant else '') + ' ' + user_input
             response = rag_chatbot.run(user_input)
             st.session_state.chat_history.append({"type": "bot", "message": response})
 
+    # 질문-답변 묶기
+    chat_pairs = []
+    history = st.session_state.chat_history
+    i = 0
 
-    # 채팅 히스토리 출력
-    for chat in st.session_state.chat_history:
-        if chat["type"] == "user":
-            st.markdown(f"""
-            <div class="chat-message user-message">
-                <strong>질문:</strong> {chat["message"]}
-            </div>
-            """, unsafe_allow_html=True)
+    while i < len(history) - 1:
+        if history[i]["type"] == "user" and history[i+1]["type"] == "bot":
+            chat_pairs.append((history[i], history[i+1]))
+            i += 2
         else:
-            st.markdown(f"""
-            <div class="chat-message bot-message">
-                <strong>🤖 NutriWise AI 답변:</strong> {chat["message"]}
-            </div>
-            """, unsafe_allow_html=True)
+            i += 1  # 짝이 안 맞는 경우 넘어감
+
+    # 최근 것이 위로 오도록 역순 출력
+    for user_msg, bot_msg in reversed(chat_pairs):
+        st.markdown(f"""
+        <div class="chat-message user-message">
+            <strong>질문:</strong> {user_msg["message"]}
+        </div>
+        <div class="chat-message bot-message">
+            <strong>🤖 NutriWise AI 답변:</strong> {bot_msg["message"]}
+        </div>
+        """, unsafe_allow_html=True)
 
 # 탭 2: 맞춤 추천
 with tab2:
@@ -231,11 +231,17 @@ with tab2:
                     query = f"{age}세 {gender}{pregnancy_text}를 위한 피부 탄력 관련 영양제 추천"
                 elif "digest" in health_goals:
                     query = f"{age}세 {gender}{pregnancy_text}를 위한 장 건강 관련 프로바이오틱스 추천"
+                elif "immunity" in health_goals:
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 면역력 강화 영양제 추천"
+                elif "joint" in health_goals:
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 관절 건강 영양제 추천"
+                elif "stress" in health_goals:
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 스트레스 관리 관련 영양제 추천"
                 else:
                     query = f"{age}세 {gender}{pregnancy_text}에게 일반적으로 추천되는 건강기능식품"
 
                 # 웹 기반 추천 호출
-                web_result = get_recommendation_from_web(query)
+                web_result = get_recommendation_from_web(query, cfg)
                 try:
                     web_products = json.loads(web_result)
                     st.session_state.recommendations = web_products
@@ -252,21 +258,31 @@ with tab2:
 
         for product in st.session_state.recommendations:
             components.html(f"""
+            <style>
+                .product-card {{
+                    background: #f8fafc;
+                    border: 2px solid #e2e8f0;
+                    border-radius: 10px;
+                    padding: 1.5rem;
+                    margin: 1rem 0;
+                    border-left: 5px solid #667eea;
+                }}
+            </style>
+                            
             <div class="product-card">
                 <h3>🌟 {product['name']}</h3>
                 <p><strong>브랜드:</strong> {product['brand']} | <strong>가격:</strong> {product['price']}</p>
                 <p><strong>평점:</strong> ⭐ {product['rating']}/5.0 ({product['reviews']}개 리뷰)</p>
 
-                <h4>주요 성분:</h4>
-                <div>
-                    {''.join([f'<span class="ingredient-tag">{i}</span>' for i in product['ingredients']])}
-                </div>
+                <p><strong>주요 성분:</strong>
+                    {' '.join([f'<span class="ingredient-tag">{i}</span>' for i in product['ingredients']])}
+                </p>
 
-                <h4>기대 효과:</h4>
-                <p>{' • '.join(product['benefits'])}</p>
+                <p><strong>기대 효과:</strong>
+                    {' • '.join(product['benefits'])}</p>
 
-                <h4>복용법:</h4>
-                <p>{product['dosage']}</p>
+                <p><strong>복용법:</strong>
+                    {product['dosage']}</p>
 
                 <div class="warning-box">
                     <h4>⚠️ 주의사항:</h4>
@@ -275,7 +291,7 @@ with tab2:
                     </ul>
                 </div>
             </div>
-            """)
+            """, height=400)
 
 # - 2차 추후 개발
 # # TODO 탭 3: 성분 분석

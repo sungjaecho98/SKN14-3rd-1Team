@@ -7,8 +7,8 @@ import os
 
 load_dotenv()
 
-def get_recommendation_from_web(query: str):
-    llm = ChatOpenAI(model='gpt-4o-mini', temperature=0)
+def get_recommendation_from_web(query: str, cfg):
+    llm = ChatOpenAI(model=cfg['OPENAI_MODEL_NAME'], temperature=0)
     tavily_tool = TavilySearch(max_results=3)
     tools = [tavily_tool]
 

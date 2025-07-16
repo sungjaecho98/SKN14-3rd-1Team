@@ -33,11 +33,11 @@ st.set_page_config(
 st.markdown("""
 <style>
     .main-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #a8edea 0%, #d3f8e2 100%);
         padding: 2rem;
         border-radius: 10px;
         text-align: center;
-        color: white;
+        color: #1a202c;
         margin-bottom: 2rem;
     }
     
@@ -225,18 +225,20 @@ with tab2:
             with st.spinner("AI가 맞춤 추천을 생성하고 있습니다..."):
 
                 # 사용자 조건에 따라 검색 쿼리 설정
-                if "energy" in health_goals:
-                    query = f"{age}세 {gender}{pregnancy_text}를 위한 피로 회복, 면역력 관련 건강기능식품 추천"
-                elif "skin" in health_goals:
-                    query = f"{age}세 {gender}{pregnancy_text}를 위한 피부 탄력 관련 영양제 추천"
-                elif "digest" in health_goals:
-                    query = f"{age}세 {gender}{pregnancy_text}를 위한 장 건강 관련 프로바이오틱스 추천"
-                elif "immunity" in health_goals:
-                    query = f"{age}세 {gender}{pregnancy_text}를 위한 면역력 강화 영양제 추천"
-                elif "joint" in health_goals:
-                    query = f"{age}세 {gender}{pregnancy_text}를 위한 관절 건강 영양제 추천"
-                elif "stress" in health_goals:
-                    query = f"{age}세 {gender}{pregnancy_text}를 위한 스트레스 관리 관련 영양제 추천"
+                goal_mapping = {
+                    "immunity": "면역력 강화",
+                    "skin": "피부 건강",
+                    "energy": "피로 회복",
+                    "joint": "관절 건강",
+                    "digest": "소화/장 건강",
+                    "stress": "스트레스 관리"
+                }
+
+                selected_goals_ko = [goal_mapping[goal] for goal in health_goals]
+
+                if selected_goals_ko:
+                    goals_text = " / ".join(selected_goals_ko)
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 {goals_text} 관련 건강기능식품 추천"
                 else:
                     query = f"{age}세 {gender}{pregnancy_text}에게 일반적으로 추천되는 건강기능식품"
 
@@ -493,4 +495,3 @@ st.markdown("""
 #    - 영양소 상호작용 분석
 #    - 개인 건강 데이터 연동
 #    - 의료진 상담 예약 시스템
-

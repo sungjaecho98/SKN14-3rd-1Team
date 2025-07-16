@@ -1,0 +1,121 @@
+from config import load_config
+import os, json
+from langchain_pinecone import PineconeVectorStore
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from pinecone import Pinecone, ServerlessSpec
+from langchain_core.prompts import PromptTemplate
+from langchain.output_parsers import RegexParser
+from langchain.chains import RetrievalQA
+from pprint import pprint
+
+class RAG_Chatbot():
+
+    def __init__(self, cfg):
+
+        super().__init__()
+
+        self.openai_api_key = os.getenv('OPENAI_API_KEY')
+        self.pinecone_api_key = os.getenv('PINECONE_API_KEY')
+
+        self.cfg = cfg
+
+        self.index_name = self.cfg['VECTOR_STORE_INDEX_NAME']
+        self.openai_embedding_model = self.cfg["OPENAI_EMBEDDING_MODEL"]
+        self.pinecone_env = self.cfg['PINECONE_ENV']
+        self.openai_model_name = self.cfg['OPENAI_MODEL_NAME']
+
+        self.embeddings = OpenAIEmbeddings(openai_api_key=self.openai_api_key, model=self.openai_embedding_model )
+        self.pc = Pinecone(api_key=self.pinecone_api_key, environment=self.pinecone_env)
+        self.vector_store = PineconeVectorStore(index=self.pc.Index(self.index_name), embedding=self.embeddings)
+        self.retriever = self.vector_store.as_retriever(search_type='similarity', search_kwargs={'k': 3}) 
+        # self.prompt = self.prompt()
+
+
+    def run(self, question, temperature=0.3, max_token=1024): 
+
+        
+        llm = ChatOpenAI(openai_api_key=self.openai_api_key, temperature=temperature, model_name=self.openai_model_name, max_tokens=max_token)
+        retrieved_docs = self.retriever.get_relevant_documents(question)
+        context = "\n---\n".join([doc.page_content for doc in retrieved_docs])
+        prompt_template = self.prompt(question=question, context=context)
+
+        # qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever, chain_type="stuff", return_source_documents=True)
+        # output = qa_chain.invoke({"query": question})
+
+        response = llm.invoke(prompt_template.format(question=question, context=context))
+
+        # return {'answer': response.content, 'source_documents': retrieved_docs}
+        return response.content                        
+
+    def prompt(self, question, context):
+        system_prompt = PromptTemplate.from_template("""
+        
+         [System Instruction]
+        - 당신은 여러 문서를 분석하여 사용자의 질문에 친절히 답변하는 건강기능식품 및 영양제 추천 전문가입니다.
+        - 사용자의 질문이 특정 증상(예: 피로, 수면장애, 스트레스 등)이나 불편함에 대한 것이라면, 먼저 사용자의 상황에 공감하는 문장으로 답변을 시작하세요.
+        - 공감 문장은 예를 들어 "요즘 많이 힘드셨을 것 같아요", "수면이 부족하면 정말 힘들죠"처럼 사용자의 감정에 반응하는 내용이어야 합니다.
+        - 단순한 정보 전달 전에, 사용자의 입장에서 걱정과 상황을 이해하는 태도를 먼저 보여주세요.
+        - 증상이 반복되거나 심각할 경우, "전문가 상담도 권장드립니다"와 같은 안전한 조언도 함께 포함하세요.
+
+        - 추천하는 제품은 자세하게 설명하고, 3개를 추천하되, 문서 내에 없을 경우 가능한 만큼만 제시하세요.
+        - 답변은 반드시 [Example - Output Indicator]에 따라야 하며, 아래 문서의 내용에서만 정보를 추출해야 합니다.
+        - 문서에 정보가 없으면 "찾을 수 없습니다"라고 명확히 답변하세요.
+        - 절대로 지어내거나 추측하지 마세요. 거짓 정보를 포함하지 마세요.
+        - 문장을 "~것이다"처럼 끝내지 말고 자연스러운 설명 형태로 마무리하세요.
+        - 효과나 효능이 확실하지 않은 정보는 제공하지 마세요.
+        - 말투는 친절하고 상냥하되, 정보는 정확하고 구체적으로 제공해야 합니다.
+        
+        ※ 답변 마지막에 반드시 다음 문장을 붙이세요:
+        건강기능식품은 의약품이 아닙니다. 전문가와 상담하세요.
+        
+        
+        [Example - Output Indicator]
+        예시 형식:
+        
+        1. 제품명은 **멀티비타민 맥스**입니다.  
+           제조사는 **헬스코리아**입니다.  
+           이 제품은 **피로 회복과 면역력 증진에 도움을 줄 수 있는 기능성**을 가지고 있습니다.  
+           섭취 시에는 **1일 권장량을 초과하지 않아야 하며**, **임산부나 질환이 있는 분은 전문가와 상담이 필요합니다.**  
+           보관은 **직사광선을 피해 서늘하고 건조한 곳에서 해야 합니다.**  
+           유통기한은 **2026년 8월까지입니다.**
+        
+        2. 제품명은 **슬립케어 멜라토닌 플러스**입니다.  
+           제조사는 **바이오앤웰**입니다.  
+           이 제품은 **수면의 질 개선과 생체 리듬 정상화에 도움을 주는 기능성**을 가지고 있습니다.  
+           섭취 시에는 **운전 전 섭취를 피해야 하며**, **만 15세 이하 어린이는 섭취할 수 없습니다.**  
+           보관 조건은 **실온 보관이 원칙이며, 개봉 후에는 냉장 보관을 권장합니다.**  
+           유통기한은 **2025년 12월까지입니다.**
+        
+        ...
+        
+        ※ 모든 정보는 문서에서 제공된 사실에 기반하여 작성해야 하며, 추측하거나 생성해서는 안 됩니다.  
+        ※ 문서에 정보가 없는 항목은 “해당 정보는 제공된 문서에 없습니다.”라고 명시해주세요.  
+        ※ 문장은 항상 완결된 형태의 존댓말로 작성해주세요.
+
+        ...
+
+        ※ 각 항목은 반드시 **한글**로 작성하고, 문장형으로 친절하게 설명할 것
+        ※ 항목이 문서에 없다면 "정보 없음" 또는 생략하지 않고 "문서에 정보 없음"이라고 명시할 것
+        ※ 모든 제품 정보는 문서에 기반하여 제공해야 하며, 절대 생성하거나 추측하지 말 것
+
+        [Context]
+        {context}
+
+        [Input Data]
+        {question}
+
+    """)
+
+        return system_prompt.format(context=context, question=question)
+
+
+
+
+
+# cfg = load_config()    
+# rag = RAG_Chatbot(cfg)
+# question = '비타민 중에 임산부도 먹을 수 있는 제품 추천해줘'
+# retriever = rag.retriever
+# res = rag.run(question, retriever, cfg['OPENAI_MODEL_NAME'])
+# print(res['answer'])
+# # pprint(retriever.invoke('피로개선에 도움이 되는 영양제는?'))

@@ -1,5 +1,3 @@
-# SungJaeCho/data_refine.py
-
 import os
 import time
 import requests
@@ -64,7 +62,7 @@ def fetch_all_documents(api_url, api_key, num_of_rows=100) -> list[Document]:
     total_pages = (total_count // num_of_rows) + (1 if total_count % num_of_rows else 0) # 전체 페이지 수 계산
 
     # 이미 받은 first_page를 활용해서 문서로 바꾸고 리스트에 추가
-    all_documents.extend(json_to_documents(first_page)) # .extend(docs)는 all_documents에 문서들을 낱개로 차곡차곡 넣는 역할
+    all_documents.extend(json_to_documents(first_page)) 
 
     for page in range(2, total_pages + 1):
         params['pageNo'] = str(page) # 현재 페이지 번호를 API 요청 파라미터에 설정
@@ -106,7 +104,7 @@ def build_vector_store(documents, index_name):
     batch_size = 100
     for i in range(0, len(split_documents), batch_size):
         batch = split_documents[i:i + batch_size]
-        # vector_store.add_documents(batch)  # 주석 해제 시 실제 업로드 수행
+        # vector_store.add_documents(batch)  ####### 주석 해제 시 실제 업로드 수행
         print(f"Added batch {i//batch_size + 1}/{(len(split_documents)//batch_size) + 1}")
 
     print("\n✅ All documents added to Pinecone vector store.")
@@ -136,7 +134,7 @@ def build_qa_chain(vector_store):
     return qa_chain
 
 # ------------------------
-# 5. 메인 실행부
+# 5. 메인 실행부 예시
 # ------------------------
 if __name__ == "__main__":
     url = 'http://apis.data.go.kr/1471000/HtfsInfoService03/getHtfsItem01'

@@ -1,17 +1,14 @@
 import streamlit as st
 import json
 import warnings
-
 warnings.filterwarnings('ignore')
 import streamlit.components.v1 as components
 import importlib
 from rag_chatbot import RAG_Chatbot
-import recommand as recommand
-
+import recommand  as recommand
 importlib.reload(recommand)
 from recommand import get_recommendation_from_web
 from config import load_config
-
 cfg = load_config()
 rag_chatbot = RAG_Chatbot(cfg)
 
@@ -34,7 +31,7 @@ st.markdown("""
         color: white;
         margin-bottom: 2rem;
     } 
-
+    
     .ingredient-tag { 
         background: #e6fffa;
         color: #234e52;
@@ -44,7 +41,7 @@ st.markdown("""
         margin: 0.2rem;
         display: inline-block;
     }
-
+    
     .warning-box { 
         background: #fef5e7;
         border: 2px solid #f6ad55;
@@ -52,19 +49,19 @@ st.markdown("""
         padding: 1rem;
         margin: 1rem 0;
     }
-
+    
     .chat-message { 
         padding: 1rem;
         margin: 0.5rem 0;
         border-radius: 10px;
         border-left: 4px solid #667eea;
     }
-
+    
     .user-message { 
         background: #e6f3ff;
         text-align: right;
     }
-
+    
     .bot-message { 
         background: #f0f9ff;
     }
@@ -172,7 +169,7 @@ with tab1:
     if st.button("전송") and user_input:
         st.session_state.chat_history.append({"type": "user", "message": user_input})
         st.success(f"당신의 프로필 : {age}세 {gender}{pregnancy_text}에 맞춘 식품의약품안전처 건강기능식품정보 입니다!")
-
+        
         with st.spinner("AI가 답변 중입니다..."):
             user_input = str(age) + '세 ' + gender + ('(임신중)' if is_pregnant else '') + ' ' + user_input
             response = rag_chatbot.run(user_input)
@@ -184,8 +181,8 @@ with tab1:
     i = 0
 
     while i < len(history) - 1:
-        if history[i]["type"] == "user" and history[i + 1]["type"] == "bot":
-            chat_pairs.append((history[i], history[i + 1]))
+        if history[i]["type"] == "user" and history[i+1]["type"] == "bot":
+            chat_pairs.append((history[i], history[i+1]))
             i += 2
         else:
             i += 1  # 짝이 안 맞는 경우 넘어감
@@ -253,7 +250,7 @@ with tab2:
                     border-left: 5px solid #667eea;
                 }}
             </style>
-
+                            
             <div class="product-card">
                 <h3>🌟 {product['name']}</h3>
                 <p><strong>브랜드:</strong> {product['brand']} | <strong>가격:</strong> {product['price']}</p>
@@ -307,6 +304,7 @@ with tab3:
                 # 복사용 블록
 
                 st.code(llm_result, language="markdown")
+
 
 # 하단 정보
 st.markdown("---")

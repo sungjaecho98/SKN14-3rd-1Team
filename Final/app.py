@@ -257,6 +257,9 @@ with tab2:
         st.success(f"당신의 프로필({age}세 {gender}{pregnancy_text})에 맞춘 AI 추천 제품입니다!")
 
         for product in st.session_state.recommendations:
+            image_src = product.get('image_url', '')
+            image_html = f'<img src="{image_src}" alt="{product["name"]} 이미지">' if image_src else ''
+
             components.html(f"""
             <style>
                 .product-card {{
@@ -267,10 +270,31 @@ with tab2:
                     margin: 1rem 0;
                     border-left: 5px solid #667eea;
                 }}
+                
+                .product-image {{
+                    width: 300px;  
+                    height: 300px; 
+                    overflow: hidden; 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center; 
+                    margin: 0 auto 15px auto; 
+                    border-radius: 5px;
+                    flex-shrink: 0;
+                }}  
+
+                .product-image img {{
+                    max-width: 100%;  
+                    max-height: 100%; 
+                    object-fit: contain; 
+                    display: block; 
+                }}
             </style>
-                            
+            
+            
             <div class="product-card">
                 <h3>🌟 {product['name']}</h3>
+                <div class="product-image">{image_html}</div>
                 <p><strong>브랜드:</strong> {product['brand']} | <strong>가격:</strong> {product['price']}</p>
                 <p><strong>평점:</strong> ⭐ {product['rating']}/5.0 ({product['reviews']}개 리뷰)</p>
 
@@ -291,7 +315,7 @@ with tab2:
                     </ul>
                 </div>
             </div>
-            """, height=400)
+            """, height=800, scrolling=True)
 
 # - 2차 추후 개발
 # # TODO 탭 3: 성분 분석

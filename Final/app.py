@@ -79,17 +79,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# # 영양 성분 분석 데이터
-# @st.cache_data
-# def get_nutrition_analysis():
-#     return {
-#         "비타민": {"current": 75, "target": 100, "status": "양호"},
-#         "미네랄": {"current": 60, "target": 100, "status": "부족"},
-#         "항산화": {"current": 85, "target": 100, "status": "양호"},
-#         "오메가3": {"current": 45, "target": 100, "status": "부족"},
-#         "프로바이오틱스": {"current": 30, "target": 100, "status": "부족"}
-#     }
-
 # 사이드바 - 개인정보 입력
 st.sidebar.header("👤 개인정보 입력")
 
@@ -120,10 +109,6 @@ if st.sidebar.checkbox("소화/장 건강"):
     health_goals.append("digest")
 if st.sidebar.checkbox("스트레스 관리"):
     health_goals.append("stress")
-
-# # 추가 정보
-# allergies = st.sidebar.text_area("알레르기/복용 중인 약물",
-#                                  placeholder="예: 갑각류 알레르기, 혈압약 복용 중")
 
 # 세션 상태 초기화
 if 'chat_history' not in st.session_state:
@@ -278,8 +263,7 @@ with tab2:
             </div>
             """, height=400)
 
-# # - 전체 구성 요약: 이미지 업로드 -> ocr로 제품명 추출(일단보류) -> llm이 추출된 텍스트(제품명)를 질의로 던짐 -> 제품 정보 결과 출력
-
+# 탭 3: 사진 검색
 with tab3:
     st.header("📷 사진 속 영양제 정보 확인")
 

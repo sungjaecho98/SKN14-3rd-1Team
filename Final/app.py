@@ -1,6 +1,5 @@
 import streamlit as st
-import json
-import warnings
+import json, warnings, re
 
 warnings.filterwarnings('ignore')
 import streamlit.components.v1 as components
@@ -301,22 +300,51 @@ with tab3:
 
         with st.spinner("🧠 PaddleOCR로 텍스트 인식 중입니다..."):
             # OCR 결과 텍스트로 대체
-            ocr_text = "이곳에 인식된 텍스트가 표시됩니다"
-            st.text_area("📝 인식된 텍스트", ocr_text, height=150)
+            ocr_text = rag_chatbot.run(use_ocr=True, img_file=uploaded_file)
+            # ocr_text = "이곳에 인식된 텍스트가 표시됩니다"
+            product_blocks = re.split(r"<<[^<>]+>>", ocr_text)
+            product_blocks = [block.strip() for block in product_blocks if block.strip()]
 
-        # LLM 분석 버튼
-        if st.button("🔍 AI로 영양제 정보 분석하기", type="primary"):
-            with st.spinner("💬 AI가 제품 정보를 분석 중입니다..."):
-                # AI 분석 결과로 대체
-                llm_result = "AI가 분석한 제품 정보가 여기에 표시됩니다."
+            # 제품명 추출 (for 제목 출력)
+            titles = re.findall(r"<<([^<>]+)>>", ocr_text)
 
-                # 결과 출력
-                st.subheader("AI 분석 결과")
-                st.write(llm_result)
+            # Streamlit 출력
+            st.markdown("#### 🔍 예상 제품")
+            for idx, (title, body) in enumerate(zip(titles, product_blocks)):
+                with st.expander(f"📦 {title}"):
+                    # 본문 내부에서도 다시 강조하고 싶다면 아래처럼 추가 가능
+                    st.markdown(
+                        f"""
+                        <div style='font-size:20px; font-weight:bold; margin-bottom:10px;'>
+                        {title}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
 
-                # 복사용 블록
+                    st.markdown(
+                        f"""
+                        <div style="font-size:15px; line-height:1.6;">
+                        {body.replace("-", "•").replace("\n", "<br>")}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+            
 
-                st.code(llm_result, language="markdown")
+        # # LLM 분석 버튼
+        # if st.button("🔍 AI로 영양제 정보 분석하기", type="primary"):
+        #     with st.spinner("💬 AI가 제품 정보를 분석 중입니다..."):
+        #         # AI 분석 결과로 대체
+        #         llm_result = "AI가 분석한 제품 정보가 여기에 표시됩니다."
+
+        #         # 결과 출력
+        #         st.subheader("AI 분석 결과")
+        #         st.write(llm_result)
+
+        #         # 복사용 블록
+
+        #         st.code(llm_result, language="markdown")
 
 # 하단 정보
 st.markdown("---")

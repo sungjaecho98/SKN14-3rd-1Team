@@ -7,9 +7,9 @@ import os
 
 load_dotenv()
 
-def get_recommendation_from_web(query: str):
-    llm = ChatOpenAI(model='gpt-4o-mini', temperature=0)
-    tavily_tool = TavilySearch(max_results=3, include_images=True) # 사진 추가
+def get_recommendation_from_web(query: str, cfg):
+    llm = ChatOpenAI(model=cfg['OPENAI_MODEL_NAME'], temperature=0)
+    tavily_tool = TavilySearch(max_results=3)
     tools = [tavily_tool]
 
     # 🔧 커스텀 ReAct 프롬프트 설정
@@ -31,13 +31,7 @@ Final Answer: 질문에 대한 최종 답변 (JSON 형식으로 정확히 3개�
 
 - 최종 응답은 반드시 **설명 없이 JSON 리스트 형식**으로, **모든 항목은 한국어로 작성**해주세요.  
 - 가격은 숫자형 + "원" 단위로 표기하고, `"price": 32000원`처럼 문자열로 반환해주세요.
-- (추가) 각 제품에 대해 **관련 이미지 URL**을 `image_url` 필드에 포함시켜주세요. 
-  - 이미지를 찾을 때는 **우선적으로 온라인 쇼핑몰(예: 네이버 쇼핑, 쿠팡, 올리브영 등)에서 해당 약의 상호명을 정확히 검색하여 단일 제품 이미지를 찾아주세요.**
-  - 이미지는 **해당 제품의 상호명과 정확하게 일치하는 단일 제품 패키지 이미지**여야 합니다. 
-  - **다른 상호명, 여러 제품이 함께 있거나, 사람이 등장하거나, 광고성 배너 이미지는 절대 포함하지 마세요.**
-  - 만약 쇼핑몰에서 적합한 이미지를 찾을 수 없다면 일반 웹 검색을 시도하되, 위 조건을 반드시 지켜주세요.
-  - 최종적으로 이미지를 찾을 수 없다면 `null` 또는 빈 문자열로 반환하세요.
-  
+
 - 예시 형식:
 
 Final Answer:
@@ -52,10 +46,9 @@ Final Answer:
     "warnings": ["주의사항1", "주의사항2"],
     "category": "카테고리명",
     "rating": 4.5,
-    "reviews": 123,
-    "image_url": "https://de89qjx90gu7m.cloudfront.net/familymall_prod/product/60843cd7-dc30-49ef-8f41-9d235fae10a2.jpg"
+    "reviews": 123
   }},
-    ...
+  ...
 ]
 
 Question: {input}

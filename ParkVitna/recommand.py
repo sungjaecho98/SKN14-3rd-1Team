@@ -4,6 +4,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 import os
+import time
 
 load_dotenv()
 
@@ -73,5 +74,16 @@ def get_recommendation_from_web(query: str, cfg):
         verbose=True
     )
 
+        # 🔹 응답 시간 측정 시작
+    start_time = time.time()
+    print(f"query: {query}")
+
     result = agent_executor.invoke({"input": query})
+
+    # 🔹 응답 시간 측정 종료
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+
+    print(f"⏱️ LLM 응답 시간: {elapsed_time:.2f}초")
+
     return result["output"]

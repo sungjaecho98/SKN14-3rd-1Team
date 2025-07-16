@@ -1,23 +1,14 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
 import json
-import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import warnings
 warnings.filterwarnings('ignore')
 import streamlit.components.v1 as components
-# Python이 이미 한 번 임포트한 모듈을 캐시해두기 때문에 리로드 필요
 import importlib
-# import RAG_Chatbot as rag_chatbot
-# importlib.reload(rag_chatbot)
 from rag_chatbot import RAG_Chatbot
 import recommand  as recommand
 importlib.reload(recommand)
 from recommand import get_recommendation_from_web
 from config import load_config
-
 cfg = load_config()
 rag_chatbot = RAG_Chatbot(cfg)
 
@@ -32,16 +23,16 @@ st.set_page_config(
 # 사용자 정의 CSS
 st.markdown("""
 <style>
-    .main-header {
-        background: linear-gradient(135deg, #a8edea 0%, #d3f8e2 100%);
+    .main-header { 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 2rem;
         border-radius: 10px;
         text-align: center;
-        color: #1a202c;
+        color: white;
         margin-bottom: 2rem;
-    }
+    } 
     
-    .ingredient-tag {
+    .ingredient-tag { 
         background: #e6fffa;
         color: #234e52;
         padding: 0.3rem 0.8rem;
@@ -51,7 +42,7 @@ st.markdown("""
         display: inline-block;
     }
     
-    .warning-box {
+    .warning-box { 
         background: #fef5e7;
         border: 2px solid #f6ad55;
         border-radius: 8px;
@@ -59,27 +50,19 @@ st.markdown("""
         margin: 1rem 0;
     }
     
-    .metric-container {
-        background: white;
-        padding: 1rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        text-align: center;
-    }
-    
-    .chat-message {
+    .chat-message { 
         padding: 1rem;
         margin: 0.5rem 0;
         border-radius: 10px;
         border-left: 4px solid #667eea;
     }
     
-    .user-message {
+    .user-message { 
         background: #e6f3ff;
         text-align: right;
     }
     
-    .bot-message {
+    .bot-message { 
         background: #f0f9ff;
     }
 </style>
@@ -89,7 +72,7 @@ st.markdown("""
 st.markdown("""
 <div class="main-header">
     <h1>🌿 NutriWise</h1>
-    <p style="font-size: 1.2rem; margin-top: 0.5rem;">AI 기반 개인 맞춤형 영양제 추천 시스템</p>
+    <p style="font-size: 1.2rem; margin-top: 0.5rem;">RAG 기반 개인 맞춤형 영양제 추천 시스템</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -146,8 +129,7 @@ if 'recommendations' not in st.session_state:
     st.session_state.recommendations = []
 
 # 메인 탭 구성
-# tab1, tab2, tab3, tab4 = st.tabs(["💬 질의응답", "🎯 맞춤 추천", "🧪 성분 분석", "📊 제품 비교"])
-tab1, tab2 = st.tabs(["💬 질의응답", "🎯 맞춤 추천"])
+tab1, tab2, tab3 = st.tabs(["💬 질의응답", "🎯 맞춤 추천", "📷 영양제 사진 검색"])
 
 # 탭 1: 질의응답
 with tab1:
@@ -218,27 +200,25 @@ with tab1:
 
 # 탭 2: 맞춤 추천
 with tab2:
-    st.header("🎯 개인 맞춤형 AI 추천")
+    st.header("👩🏻 개인 맞춤형 AI 추천")
 
     if st.button("🔍 맞춤 추천 생성하기", type="primary"):
         if age and gender:
             with st.spinner("AI가 맞춤 추천을 생성하고 있습니다..."):
 
                 # 사용자 조건에 따라 검색 쿼리 설정
-                goal_mapping = {
-                    "immunity": "면역력 강화",
-                    "skin": "피부 건강",
-                    "energy": "피로 회복",
-                    "joint": "관절 건강",
-                    "digest": "소화/장 건강",
-                    "stress": "스트레스 관리"
-                }
-
-                selected_goals_ko = [goal_mapping[goal] for goal in health_goals]
-
-                if selected_goals_ko:
-                    goals_text = " / ".join(selected_goals_ko)
-                    query = f"{age}세 {gender}{pregnancy_text}를 위한 {goals_text} 관련 건강기능식품 추천"
+                if "energy" in health_goals:
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 피로 회복, 면역력 관련 건강기능식품 추천"
+                elif "skin" in health_goals:
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 피부 탄력 관련 영양제 추천"
+                elif "digest" in health_goals:
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 장 건강 관련 프로바이오틱스 추천"
+                elif "immunity" in health_goals:
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 면역력 강화 영양제 추천"
+                elif "joint" in health_goals:
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 관절 건강 영양제 추천"
+                elif "stress" in health_goals:
+                    query = f"{age}세 {gender}{pregnancy_text}를 위한 스트레스 관리 관련 영양제 추천"
                 else:
                     query = f"{age}세 {gender}{pregnancy_text}에게 일반적으로 추천되는 건강기능식품"
 
@@ -259,9 +239,6 @@ with tab2:
         st.success(f"당신의 프로필({age}세 {gender}{pregnancy_text})에 맞춘 AI 추천 제품입니다!")
 
         for product in st.session_state.recommendations:
-            image_src = product.get('image_url', '')
-            image_html = f'<img src="{image_src}" alt="{product["name"]} 이미지">' if image_src else ''
-
             components.html(f"""
             <style>
                 .product-card {{
@@ -272,31 +249,10 @@ with tab2:
                     margin: 1rem 0;
                     border-left: 5px solid #667eea;
                 }}
-                
-                .product-image {{
-                    width: 300px;  
-                    height: 300px; 
-                    overflow: hidden; 
-                    display: flex; 
-                    justify-content: center; 
-                    align-items: center; 
-                    margin: 0 auto 15px auto; 
-                    border-radius: 5px;
-                    flex-shrink: 0;
-                }}  
-
-                .product-image img {{
-                    max-width: 100%;  
-                    max-height: 100%; 
-                    object-fit: contain; 
-                    display: block; 
-                }}
             </style>
-            
-            
+                            
             <div class="product-card">
                 <h3>🌟 {product['name']}</h3>
-                <div class="product-image">{image_html}</div>
                 <p><strong>브랜드:</strong> {product['brand']} | <strong>가격:</strong> {product['price']}</p>
                 <p><strong>평점:</strong> ⭐ {product['rating']}/5.0 ({product['reviews']}개 리뷰)</p>
 
@@ -317,147 +273,37 @@ with tab2:
                     </ul>
                 </div>
             </div>
-            """, height=800, scrolling=True)
+            """, height=400)
 
-# - 2차 추후 개발
-# # TODO 탭 3: 성분 분석
-# with tab3:
-#     st.header("🧪 영양 성분 분석 대시보드")
+# # - 전체 구성 요약: 이미지 업로드 -> ocr로 제품명 추출(일단보류) -> llm이 추출된 텍스트(제품명)를 질의로 던짐 -> 제품 정보 결과 출력
 
-#     nutrition_data = get_nutrition_analysis()
+with tab3:
+    st.header("📷 사진 속 영양제 정보 확인")
 
-#     # 영양소 현황 메트릭
-#     st.subheader("📊 현재 영양소 섭취 현황")
-#     cols = st.columns(len(nutrition_data))
+    # 이미지 업로드
+    uploaded_file = st.file_uploader("💊 영양제 사진을 업로드하세요", type=["jpg", "jpeg", "png"])
 
-#     for i, (nutrient, data) in enumerate(nutrition_data.items()):
-#         with cols[i]:
-#             delta = data['current'] - data['target']
-#             st.metric(
-#                 label=nutrient,
-#                 value=f"{data['current']}%",
-#                 delta=f"{delta:+d}%",
-#                 delta_color="normal" if delta >= 0 else "inverse"
-#             )
+    if uploaded_file:
+        st.image(uploaded_file, caption="업로드한 사진", width=800)
 
-#     # 영양소 차트
-#     st.subheader("📈 영양소 섭취 분석")
+        with st.spinner("🧠 PaddleOCR로 텍스트 인식 중입니다..."):
+            # OCR 결과 텍스트로 대체
+            ocr_text = "이곳에 인식된 텍스트가 표시됩니다"
+            st.text_area("📝 인식된 텍스트", ocr_text, height=150)
 
-#     # 레이더 차트
-#     categories = list(nutrition_data.keys())
-#     current_values = [nutrition_data[cat]['current'] for cat in categories]
-#     target_values = [nutrition_data[cat]['target'] for cat in categories]
+        # LLM 분석 버튼
+        if st.button("🔍 AI로 영양제 정보 분석하기", type="primary"):
+            with st.spinner("💬 AI가 제품 정보를 분석 중입니다..."):
+                # AI 분석 결과로 대체
+                llm_result = "AI가 분석한 제품 정보가 여기에 표시됩니다."
 
-#     fig = go.Figure()
+                # 결과 출력
+                st.subheader("AI 분석 결과")
+                st.write(llm_result)
 
-#     fig.add_trace(go.Scatterpolar(
-#         r=current_values,
-#         theta=categories,
-#         fill='toself',
-#         name='현재 섭취량',
-#         line_color='rgb(102, 126, 234)'
-#     ))
+                # 복사용 블록
 
-#     fig.add_trace(go.Scatterpolar(
-#         r=target_values,
-#         theta=categories,
-#         fill='toself',
-#         name='권장 섭취량',
-#         line_color='rgb(255, 99, 132)',
-#         opacity=0.6
-#     ))
-
-#     fig.update_layout(
-#         polar=dict(
-#             radialaxis=dict(
-#                 visible=True,
-#                 range=[0, 100]
-#             )),
-#         showlegend=True,
-#         title="영양소 섭취 현황 비교"
-#     )
-
-#     st.plotly_chart(fig, use_container_width=True)
-
-#     # 부족한 영양소 분석
-#     st.subheader("⚠️ 부족한 영양소 분석")
-
-#     deficient_nutrients = []
-#     for nutrient, data in nutrition_data.items():
-#         if data['current'] < 70:  # 70% 미만은 부족으로 판단
-#             deficient_nutrients.append({
-#                 'nutrient': nutrient,
-#                 'current': data['current'],
-#                 'gap': 100 - data['current']
-#             })
-
-#     if deficient_nutrients:
-#         for nutrient in deficient_nutrients:
-#             st.warning(f"**{nutrient['nutrient']}** 부족 ({nutrient['current']}% 섭취, {nutrient['gap']}% 부족)")
-#     else:
-#         st.success("모든 영양소가 권장 섭취량을 만족합니다! 👏")
-
-# # 탭 4: 제품 비교
-# with tab4:
-#     st.header("📊 제품 비교 분석")
-
-#     products_df = load_sample_data()
-
-#     # 제품 선택
-#     selected_products = st.multiselect(
-#         "비교할 제품을 선택하세요 (최대 4개)",
-#         options=products_df['name'].tolist(),
-#         default=products_df['name'].tolist()[:3],
-#         max_selections=4
-#     )
-
-#     if selected_products:
-#         comparison_df = products_df[products_df['name'].isin(selected_products)]
-
-#         # 가격 비교 차트
-#         st.subheader("💰 가격 비교")
-#         fig_price = px.bar(
-#             comparison_df,
-#             x='name',
-#             y='price',
-#             color='category',
-#             title="제품별 가격 비교",
-#             labels={'price': '가격 (원)', 'name': '제품명'}
-#         )
-#         st.plotly_chart(fig_price, use_container_width=True)
-
-#         # 평점 비교 차트
-#         st.subheader("⭐ 평점 비교")
-#         fig_rating = px.scatter(
-#             comparison_df,
-#             x='rating',
-#             y='reviews',
-#             size='price',
-#             color='category',
-#             hover_name='name',
-#             title="평점 vs 리뷰 수 (크기: 가격)",
-#             labels={'rating': '평점', 'reviews': '리뷰 수'}
-#         )
-#         st.plotly_chart(fig_rating, use_container_width=True)
-
-#         # 상세 비교 테이블
-#         st.subheader("📋 상세 비교")
-
-#         # 테이블 데이터 준비
-#         table_data = []
-#         for _, product in comparison_df.iterrows():
-#             table_data.append({
-#                 '제품명': product['name'],
-#                 '브랜드': product['brand'],
-#                 '가격': f"₩{product['price']:,}",
-#                 '평점': f"{product['rating']}/5.0",
-#                 '리뷰수': f"{product['reviews']}개",
-#                 '주요성분': ', '.join(product['ingredients'][:3]) + '...',
-#                 '복용법': product['dosage']
-#             })
-
-#         comparison_table = pd.DataFrame(table_data)
-#         st.dataframe(comparison_table, use_container_width=True)
+                st.code(llm_result, language="markdown")
 
 
 # 하단 정보
@@ -468,30 +314,3 @@ st.markdown("""
     <p>🔬 AI 추천 시스템은 지속적으로 학습하고 개선됩니다.</p>
 </div>
 """, unsafe_allow_html=True)
-
-# TODO 실제 구현 시 필요한 추가 기능들
-# 실제 구현 시 추가할 기능들:
-#
-# 1. 데이터베이스 연동:
-#    - PostgreSQL/MongoDB에 제품 정보 저장
-#    - 사용자 프로필 및 추천 기록 저장
-#
-# 2. LLM + RAG 시스템:
-#    - OpenAI API 모델 사용
-#    - 벡터 데이터베이스 (Pinecone) 연동
-#    - 제품 문서 임베딩 및 검색
-#
-# 3. 실시간 데이터 수집:
-#    - iHerb, 쿠팡 등 쇼핑몰 크롤링
-#    - 가격 변동 추적
-#    - 리뷰 감성 분석
-#
-# 4. 개인화 기능:
-#    - 사용자 로그인/회원가입
-#    - 복용 기록 추적
-#    - 알림 시스템
-#
-# 5. 고급 분석:
-#    - 영양소 상호작용 분석
-#    - 개인 건강 데이터 연동
-#    - 의료진 상담 예약 시스템

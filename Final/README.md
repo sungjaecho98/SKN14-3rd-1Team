@@ -39,16 +39,19 @@
 | 카테고리           | 기술                                                                                         |
 | -------------- | ------------------------------------------------------------------------------------------ |
 | **Language**   | ![Python](https://img.shields.io/badge/Python-3.12-blue)                                   |
-| **Framework**  | ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit)                 |
+| **Framework**  | ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit\&logoColor=white)                 |
 | **LLM**        | ![OpenAI](https://img.shields.io/badge/OpenAI-GPT4-412991?logo=openai\&logoColor=white)    |
 | **Embedding**  | ![OpenAIEmbeddings](https://img.shields.io/badge/OpenAI_Embeddings-green)                  |
 | **Web Search** | ![Tavily](https://img.shields.io/badge/Tavily_Search-5849BE)                               |
 | **Vector DB**  | ![Pinecone](https://img.shields.io/badge/Pinecone-2D3748?logo=databricks\&logoColor=white) |
-| **Tools**      | GitHub, Notion, VS Code                                                                    |
+| **Tools**      | ![Discord](https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white) ![Notion](https://img.shields.io/badge/Notion-000000?logo=notion&logoColor=white)                                                                    |
 
 ---
 
 ## 💡 프로젝트 개요 및 필요성
+
+<img src="./images/news_01.png" width="300px">
+<img src="./images/news_02.png" width="300px">
 
 * 건강기능식품 시장은 급성장 중이며, 소비자의 연령, 성별, 건강 목적에 따라 다양한 니즈가 존재함
 * 하지만 사용자 맞춤형 정보 제공이 미흡하고, 비전문적 추천이 난무
@@ -112,7 +115,7 @@ graph TD
 
 ## 💬 주요 기능 (Streamlit UI)
 
-### 📌 질의응답 (RAG 기반)
+### 📌 질의응답 (RAG + LLM 기반)
 
 * 샘플 질문 버튼 제공
 * 사용자 입력 기반 RAG 흐름 실행
@@ -123,6 +126,12 @@ graph TD
 * 사용자 정보 입력 (나이, 성별, 임신 여부, 관심 건강 주제)
 * 관심사에 따라 쿼리 생성 → ReAct 기반 검색 실행
 * 결과를 카드 형태로 출력 (제품명, 가격, 성분, 효과 등 시각화)
+
+### 📌 사진 검색 및 분석 (OCR +  RAG 기반)
+
+* 설명1
+* 설명2
+* 설명3
 
 ---
 

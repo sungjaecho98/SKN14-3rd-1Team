@@ -327,21 +327,6 @@ with tab3:
                         """,
                         unsafe_allow_html=True
                     )
-            
-
-        # # LLM 분석 버튼
-        # if st.button("🔍 AI로 영양제 정보 분석하기", type="primary"):
-        #     with st.spinner("💬 AI가 제품 정보를 분석 중입니다..."):
-        #         # AI 분석 결과로 대체
-        #         llm_result = "AI가 분석한 제품 정보가 여기에 표시됩니다."
-
-        #         # 결과 출력
-        #         st.subheader("AI 분석 결과")
-        #         st.write(llm_result)
-
-        #         # 복사용 블록
-
-        #         st.code(llm_result, language="markdown")
 
 # 하단 정보
 st.markdown("---")

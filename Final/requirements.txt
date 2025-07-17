@@ -1,6 +1,5 @@
 importlib_metadata==8.6.1
 importlib_resources==6.5.2
-jq==1.10.0
 langchain==0.3.26
 langchain-community==0.3.27
 langchain-core==0.3.68
@@ -9,7 +8,6 @@ langchain-pinecone==0.2.8
 langchain-tavily==0.2.8
 langchain-tests==0.3.20
 langchain-text-splitters==0.3.8
-langsmith==0.4.5
 numpy==2.2.4
 openai==1.95.1
 paddleocr==3.1.0

@@ -36,15 +36,15 @@
 
 ## 🛠️ 기술 스택
 
-| 카테고리           | 기술                                                                                         |
-| -------------- | ------------------------------------------------------------------------------------------ |
-| **Language**   | ![Python](https://img.shields.io/badge/Python-3.12-blue)                                   |
-| **Framework**  | ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit\&logoColor=white)                 |
-| **LLM**        | ![OpenAI](https://img.shields.io/badge/OpenAI-GPT4-412991?logo=openai\&logoColor=white)    |
-| **Embedding**  | ![OpenAIEmbeddings](https://img.shields.io/badge/OpenAI_Embeddings-green)                  |
-| **Web Search** | ![Tavily](https://img.shields.io/badge/Tavily_Search-5849BE)                               |
-| **Vector DB**  | ![Pinecone](https://img.shields.io/badge/Pinecone-2D3748?logo=databricks\&logoColor=white) |
-| **Tools**      | ![Discord](https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white) ![Notion](https://img.shields.io/badge/Notion-000000?logo=notion&logoColor=white)                                                                    |
+| 카테고리           | 기술                                                                                                                                                                                                                                                       |
+| -------------- |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Language**   | ![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white) |
+| **Framework**  | ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white) |
+| **LLM** | ![OpenAI](https://img.shields.io/badge/OpenAI-GPT4-412991?logo=openai&logoColor=white) |
+| **Embedding**  | ![OpenAIEmbeddings](https://img.shields.io/badge/OpenAI_Embeddings-green?logo=openai&logoColor=white) |
+| **Web Search** | ![Tavily](https://img.shields.io/badge/Tavily_Search-5849BE?logo=google&logoColor=white) |
+| **Vector DB** | ![Faiss](https://img.shields.io/badge/Faiss-005571?logo=facebook&logoColor=white) |
+| **Tools**      | ![Discord](https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white) ![Notion](https://img.shields.io/badge/Notion-000000?logo=notion&logoColor=white) |
 
 ---
 
@@ -57,13 +57,18 @@
 **본 프로젝트 NutriWise**는 이러한 문제를 해결하기 위해 개발된  
 **RAG(Retrieval-Augmented Generation) 기반 영양제 추천 시스템**입니다.
 
-사용자가 입력한 건강 목표(예: 피로 회복, 피부 건강 등), 성별, 나이, 임신 여부 등의 정보를 바탕으로,  
-관련된 문서에서 정보를 추출하고, LLM을 통해 **신뢰성 있는 맞춤형 답변**을 제공합니다.  
-또한, **웹 검색 기반 추천**과 **OCR 기능**을 통합하여  
-**영양제 사진을 통한 제품 인식 및 분석** 기능까지 함께 제공합니다.
+- 사용자의 **건강 목표, 연령, 성별, 임신 여부 등** 프로필 정보를 기반으로  
+  **유사 문서를 검색**하고, LLM을 통해 **신뢰도 높은 맞춤형 답변**을 생성합니다.
+
+- **웹 검색** 기능을 통해 최신 제품이나 보충 정보를 반영할 수 있습니다.
+
+- **OCR 기반 이미지 인식 기능**으로 영양제 사진만으로도 제품을 분석할 수 있습니다.
+
 
   <img src="./images/news_01.png" width="300px" />
   <img src="./images/news_02.png" width="300px" />
+
+---
 
 ### ❗ 프로젝트 필요성
 - **영양제 복용의 일상화**  
@@ -104,19 +109,19 @@
 
 ### 4. 벡터 임베딩 및 저장
 - OpenAI Embedding API (`text-embedding-ada-002`)를 이용하여 문서 임베딩
-- Pinecone 벡터 데이터베이스에 인덱스 생성 및 저장
+- Faiss 벡터 데이터베이스에 인덱스 생성 및 저장
   - Index 이름: 프로젝트 환경 설정 파일(config)에서 관리
   - 검색 파라미터: `k=3` 유사 문서 검색
 
 ### 5. RAG 검색용 리트리버 구성
-- Pinecone에 저장된 벡터를 기반으로 LangChain Retriever 구성
+- Faiss에 저장된 벡터를 기반으로 LangChain Retriever 구성
 - 사용자의 질의에 대해 유사도가 높은 문서 3개를 검색하여 LLM의 응답 컨텍스트로 활용
 
 
 ### ✅ 임베딩 모델 & DB
 
 * **Embedding**: OpenAI Embeddings
-* **Vector Store**: Pinecone (LangChain 연동)
+* **Vector Store**: Faiss
 
 ### ✅ RAG 기반 챗봇
 
@@ -125,8 +130,9 @@
 
 ### ✅ 실시간 추천 시스템
 
-* TavilySearch + LangChain Agent 기반 ReAct Agent 사용
-* 사용자 입력 → 웹 검색 → 제품 정보 정제 → JSON 형태 반환
+* TavilySearch + Google 이미지 검색
+* 사용자 입력 → 웹 검색 → 이미지 검색
+* 제품 정보와 사진을 함께 제공 
 
 ---
 
@@ -157,7 +163,6 @@
 
 * 샘플 질문 버튼 제공
 * 사용자 입력 기반 RAG 흐름 실행
-* 과거 Q\&A 히스토리 카드 형태 출력
 
 ### 📌 맞춤 추천 (Tavily 기반)
 
@@ -166,11 +171,11 @@
 * 결과를 카드 형태로 출력 (제품명, 가격, 성분, 효과 등 시각화)
 
 ### 📌 사진 검색 및 분석 (OCR +  RAG 기반)
---> 이것도 보류. 아직 미정
+--> 
 
-* 설명1
-* 설명2
-* 설명3
+* 이미지 업로드 → 텍스트(OCR) 추출 → RAG 기반 정보 검색  
+* 제품명 등 키워드로 효능·성분·주의사항 자동 안내  
+* 텍스트 인식과 문서 검색을 결합한 직관적인 추천 방식
 
 ---
 

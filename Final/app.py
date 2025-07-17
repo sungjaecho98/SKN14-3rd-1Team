@@ -5,10 +5,10 @@ warnings.filterwarnings('ignore')
 import streamlit.components.v1 as components
 import importlib
 from rag_chatbot import RAG_Chatbot
-import recommand as recommand
+import recommend as recommend
 
-importlib.reload(recommand)
-from recommand import get_recommendation_from_web
+importlib.reload(recommend)
+from recommend import get_recommendation_from_web
 from config import load_config
 
 cfg = load_config()
@@ -25,14 +25,14 @@ st.set_page_config(
 # 사용자 정의 CSS
 st.markdown("""
 <style>
-    .main-header { 
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    .main-header {
+        background: linear-gradient(135deg, #a8edea 0%, #d3f8e2 100%);
         padding: 2rem;
         border-radius: 10px;
         text-align: center;
-        color: white;
+        color: #1a202c;
         margin-bottom: 2rem;
-    } 
+    }
 
     .ingredient-tag { 
         background: #e6fffa;
@@ -187,7 +187,7 @@ with tab1:
 
 # 탭 2: 맞춤 추천
 with tab2:
-    st.header("👩🏻 개인 맞춤형 AI 추천")
+    st.header("🎯 개인 맞춤형 AI 추천")
 
     if st.button("🔍 맞춤 추천 생성하기", type="primary"):
         if age and gender:
@@ -212,13 +212,11 @@ with tab2:
                     query = f"{age}세 {gender}{pregnancy_text}에게 일반적으로 추천되는 건강기능식품"
 
                 # 웹 기반 추천 호출
-                web_result = get_recommendation_from_web(query, cfg)
-                try:
-                    web_products = json.loads(web_result)
+                web_products = get_recommendation_from_web(query, cfg)  # 이미 파싱된 리스트를 반환
+                if isinstance(web_products, list):
                     st.session_state.recommendations = web_products
-                except Exception as e:
-                    print("Error parsing web result:", e)
-                    st.error("추천 정보를 파싱하는 데 실패했습니다. 응답 내용:\n" + web_result)
+                else:
+                    st.error("추천 정보를 파싱하는 데 실패했습니다. 응답 내용:\n" + str(web_products))
                     st.stop()
         else:
             st.error("사이드바에서 개인정보를 모두 입력해주세요.")
@@ -312,7 +310,6 @@ with tab3:
             st.markdown("#### 🔍 예상 제품")
             for idx, (title, body) in enumerate(zip(titles, product_blocks)):
                 with st.expander(f"📦 {title}"):
-                    # 본문 내부에서도 다시 강조하고 싶다면 아래처럼 추가 가능
                     st.markdown(
                         f"""
                         <div style='font-size:20px; font-weight:bold; margin-bottom:10px;'>

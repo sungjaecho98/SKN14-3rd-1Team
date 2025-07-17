@@ -13,6 +13,7 @@
 * 👨‍💻 팀 소개
 * 🛠️ 기술 스택
 * 💡 프로젝트 개요 및 필요성
+* ⚙️ 설치 및 환경 설정
 * 🗂 데이터 및 모델 구성
 * ⚙️ 시스템 아키텍처
 * 🧠 챗봇 질의 흐름
@@ -28,9 +29,9 @@
 
 ### 팀명: NutriWise
 
-|                   **문상희**                  |                   **김재아**                  |                   **박빛나**                  |                   **서은선**                  |                   **안윤지**                  |                   **조성재**                  |
-| :----------------------------------------: | :----------------------------------------: | :----------------------------------------: | :----------------------------------------: | :----------------------------------------: | :----------------------------------------: |
-| <img src="./images/01.jpeg" width="120px"> | <img src="./images/01.jpeg" width="120px"> | <img src="./images/01.jpeg" width="120px"> | <img src="./images/01.jpeg" width="120px"> | <img src="./images/01.jpeg" width="120px"> | <img src="./images/01.jpeg" width="120px"> |
+|                   **문상희**                  |                         **김재아**                         |                   **박빛나**                  |                   **서은선**                  |                   **안윤지**                  |                   **조성재**                  |
+| :----------------------------------------: |:-------------------------------------------------------:| :----------------------------------------: | :----------------------------------------: | :----------------------------------------: | :----------------------------------------: |
+| <img src="./images/01.jpeg" width="120px"> | <img src="./images/Little_Miss_Neat.png" width="120px"> | <img src="./images/01.jpeg" width="120px"> | <img src="./images/01.jpeg" width="120px"> | <img src="./images/01.jpeg" width="120px"> | <img src="./images/01.jpeg" width="120px"> |
 
 ---
 
@@ -82,6 +83,46 @@
 * 정부 공공 데이터를 활용한 **신뢰성 있는 정보 제공**
 * **LLM + RAG 기반의 질의응답 시스템**
 * **웹 검색 기반 실시간 맞춤 추천 기능** 을 제공하는 헬스케어 AI 시스템입니다.
+
+---
+## ⚙️ 설치 및 환경 설정
+NutriWise를 실행하기 위해 아래 항목들을 반드시 설정해야 합니다.
+
+### 1️⃣ 패키지 설치
+다음 명령어로 프로젝트에 필요한 모든 Python 패키지 설치합니다.
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2️⃣ 환경 변수 (.env) 설정
+.env 파일을 프로젝트 루트에 생성하고, 아래 항목들을 입력합니다.
+```
+PINECONE_API_KEY=your_pinecone_key
+OPENAI_API_KEY=your_openai_key
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+LANGSMITH_TRACING=true
+LANGSMITH_ENDPOINT=https://api.smith.langchain.com
+LANGSMITH_API_KEY=your_langsmith_key
+LANGSMITH_PROJECT=your_project_name
+DECODING_KEY=your_decoding_key
+GOOGLE_API_KEY=your_google_api_key
+GOOGLE_CSE_ID=your_google_cse_id
+```
+
+### ️3️⃣ FAISS 설치
+FAISS는 고속 벡터 검색을 위한 라이브러리이며 다음 명령어로 설치합니다.
+```
+pip install faiss-cpu
+```
+
+### 4️⃣ FAISS 인덱스 파일 다운로드
+아래 링크를 통해 `faiss_index` 폴더를 다운로드하고, 프로젝트 디렉토리에 포함시켜 주세요:
+
+👉 [faiss_index 폴더 다운로드](https://drive.google.com/file/d/1oFmVM4ggEc4VtHMvyVMEfvbe93VLqU-d/view?usp=drive_link)
+
+- 해당 폴더가 없으면 벡터 검색 기능이 정상적으로 동작하지 않습니다.
+
 
 ---
 

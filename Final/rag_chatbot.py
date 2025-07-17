@@ -1,9 +1,8 @@
-import os, re
-from langchain_pinecone import PineconeVectorStore
+import os
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from pinecone import Pinecone
 from langchain_core.prompts import PromptTemplate
 from ocr_llm import OCR_LLM
+from langchain.vectorstores import FAISS
 
 class RAG_Chatbot():
 
@@ -17,20 +16,16 @@ class RAG_Chatbot():
         self.cfg = cfg
         self.ocr = OCR_LLM(self.cfg)
 
-        self.index_name = self.cfg['VECTOR_STORE_INDEX_NAME']
         self.openai_embedding_model = self.cfg["OPENAI_EMBEDDING_MODEL"]
-        self.pinecone_env = self.cfg['PINECONE_ENV']
         self.openai_model_name = self.cfg['OPENAI_MODEL_NAME']
 
         self.embeddings = OpenAIEmbeddings(openai_api_key=self.openai_api_key, model=self.openai_embedding_model )
-        self.pc = Pinecone(api_key=self.pinecone_api_key, environment=self.pinecone_env)
-        self.vector_store = PineconeVectorStore(index=self.pc.Index(self.index_name), embedding=self.embeddings)
+        self.vector_store = FAISS.load_local("faiss_index", embeddings=self.embeddings, allow_dangerous_deserialization=True)
         self.retriever = self.vector_store.as_retriever(search_type='similarity', search_kwargs={'k': 3})
-
-
-    def run(self, question="", use_ocr='False', img_file=None, temperature=0.3, max_token=1024): 
-
         
+
+    def run(self, question="", use_ocr=False, img_file=None, temperature=0.3, max_token=1024): 
+
         llm = ChatOpenAI(openai_api_key=self.openai_api_key, temperature=temperature, model_name=self.openai_model_name, max_tokens=max_token)
   
         if use_ocr:
@@ -48,11 +43,17 @@ class RAG_Chatbot():
             prompt_template = self.prompt_ocr(question=question, context=context)
         
         else:
-            retrieved_docs = self.retriever.get_relevant_documents(question)
-            context = "\n---\n".join([doc.page_content for doc in retrieved_docs])
-            prompt_template = self.prompt(question=question, context=context)
+            try:
+                if not question.strip():
+                    raise ValueError("질문이 비어 있습니다. 텍스트를 입력해 주세요.")
+                
+                retrieved_docs = self.retriever.get_relevant_documents(question)
+                context = "\n---\n".join([doc.page_content for doc in retrieved_docs])
+                prompt_template = self.prompt(question=question, context=context)
 
-            
+            except Exception as e:
+                raise RuntimeError(f"텍스트 처리 중 오류가 발생했습니다: {e}")
+
         response = llm.invoke(prompt_template.format(question=question, context=context))
     
         return response.content

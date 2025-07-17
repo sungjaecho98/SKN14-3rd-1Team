@@ -138,7 +138,8 @@ def build_qa_chain(vector_store):
 # ------------------------
 if __name__ == "__main__":
     url = 'http://apis.data.go.kr/1471000/HtfsInfoService03/getHtfsItem01'
-    api_key = os.environ.get('OPENAI_API_KEY')
+    api_key = os.environ.get('API_KEY')
+    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 
     # Step 1: 문서 수집
     documents = fetch_all_documents(url, api_key)

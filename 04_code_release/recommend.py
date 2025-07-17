@@ -27,10 +27,6 @@ def search_image_google(product_name: str, brand: str) -> str:
     response = requests.get("https://www.googleapis.com/customsearch/v1", params=params)
     data = response.json()
 
-    # print(f"\n--- Google API 응답 (쿼리: {query}) ---")
-    # print(json.dumps(data, indent=2, ensure_ascii=False))
-    # print("-------------------------------------------\n")
-
     brand_lower = brand.lower()
     product_name_parts = [k.lower() for k in product_name.split()]
     meaningful_name_keywords = [
